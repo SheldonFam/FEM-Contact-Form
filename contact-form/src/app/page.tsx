@@ -21,6 +21,7 @@ export default function Home() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
@@ -28,6 +29,8 @@ export default function Home() {
     setIsSubmitted(true);
     reset();
   };
+
+  const selected = watch("queryType");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[hsl(148,38%,91%)] p-6">
@@ -112,45 +115,36 @@ export default function Home() {
             )}
           </div>
 
-          {/* Query Type */}
+          {/* with state */}
           <div>
             <label className="block text-base font-medium text-[hsl(187,24%,22%)] mb-2 font-karla">
               Query Type <span className="text-[hsl(169,82%,27%)]">*</span>
             </label>
+
             <div className="flex flex-col gap-2 md:flex-row">
-              <label
-                className={`flex items-center gap-2 font-karla w-full md:w-auto border rounded-md p-3 cursor-pointer transition ${
-                  // highlight if checked
-                  "border-[hsl(186,15%,59%)] data-[state=checked]:border-[hsl(169,82%,27%)]"
-                } ${
-                  // highlight if checked
-                  "[&>input:checked]:border-[hsl(169,82%,27%)] [&>input:checked]:bg-[hsl(148,38%,91%)]"
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="General Enquiry"
-                  {...register("queryType", {
-                    required: "Please select a query type",
-                  })}
-                  className="h-4 w-4 accent-[hsl(169,82%,27%)] border-[hsl(186,15%,59%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:outline-none"
-                />
-                General Enquiry
-              </label>
-              <label
-                className={`flex items-center gap-2 font-karla w-full md:w-auto border rounded-md p-3 cursor-pointer transition ${"border-[hsl(186,15%,59%)] data-[state=checked]:border-[hsl(169,82%,27%)]"} ${"[&>input:checked]:border-[hsl(169,82%,27%)] [&>input:checked]:bg-[hsl(148,38%,91%)]"}`}
-              >
-                <input
-                  type="radio"
-                  value="Support Request"
-                  {...register("queryType", {
-                    required: "Please select a query type",
-                  })}
-                  className="h-4 w-4 accent-[hsl(169,82%,27%)] border-[hsl(186,15%,59%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:outline-none"
-                />
-                Support Request
-              </label>
+              {["General Enquiry", "Support Request"].map((type) => (
+                <label
+                  key={type}
+                  className={`flex items-center gap-2 font-karla w-full border rounded-md p-3 cursor-pointer transition
+              ${
+                selected === type
+                  ? "border-[hsl(169,82%,27%)] bg-[hsl(148,38%,91%)]"
+                  : "border-[hsl(186,15%,59%)]"
+              }`}
+                >
+                  <input
+                    type="radio"
+                    value={type}
+                    {...register("queryType", {
+                      required: "Please select a query type",
+                    })}
+                    className="h-4 w-4 accent-[hsl(169,82%,27%)]"
+                  />
+                  {type}
+                </label>
+              ))}
             </div>
+
             {errors.queryType && (
               <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
                 {errors.queryType.message}
