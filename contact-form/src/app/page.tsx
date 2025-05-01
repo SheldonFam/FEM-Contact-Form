@@ -126,11 +126,14 @@ export default function Home() {
                 <label
                   key={type}
                   className={`flex items-center gap-2 font-karla w-full border rounded-md p-3 cursor-pointer transition
-              ${
-                selected === type
-                  ? "border-[hsl(169,82%,27%)] bg-[hsl(148,38%,91%)]"
-                  : "border-[hsl(186,15%,59%)]"
-              }`}
+                    ${
+                      errors.queryType
+                        ? "border-[hsl(0,66%,54%)]"
+                        : selected === type
+                        ? "border-[hsl(169,82%,27%)] bg-[hsl(148,38%,91%)]" // 选中时绿色
+                        : "border-[hsl(186,15%,59%)]"
+                    }
+                  `}
                 >
                   <input
                     type="radio"
