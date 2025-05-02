@@ -1,14 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-interface SuccessMessageProps {
+interface ToastProps {
   title?: string;
   message?: string;
+  onDismiss?: () => void;
 }
 
-export default function SuccessMessage({
+export const Toast: React.FC<ToastProps> = ({
   title = "Message Sent!",
   message = "Thanks for completing the form. We'll be in touch soon!",
-}: SuccessMessageProps) {
+  onDismiss,
+}) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onDismiss?.();
+    }, 3000); // Dismiss after 3 seconds
+
+    return () => clearTimeout(timer); // Cleanup timer on unmount
+  }, [onDismiss]);
+
   return (
     <div className="fixed top-6 left-1/2 z-50 w-[90vw] max-w-xl -translate-x-1/2 rounded-xl bg-[hsl(187,24%,22%)] px-6 py-4 shadow-lg flex items-start gap-3 text-white">
       <svg
@@ -40,4 +50,4 @@ export default function SuccessMessage({
       </div>
     </div>
   );
-}
+};

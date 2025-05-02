@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import SuccessMessage from "./SuccessMessage";
-
-type FormData = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  queryType: string;
-  message: string;
-  consent: boolean;
-};
+import { FormData } from "@/types/form.types";
+import { QUERY_TYPES, FORM_VALIDATION } from "@/constants/form.constants";
+import { FormInput } from "@/components/form/FormInput";
+import { FormTextArea } from "@/components/form/FormTextArea";
+import { FormRadio } from "@/components/form/FormRadio";
+import { FormCheckbox } from "@/components/form/FormCheckbox";
+import { Toast } from "@/components/common/Toast";
+import { Button } from "@/components/common/Button";
 
 export default function Home() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -24,188 +24,105 @@ export default function Home() {
     watch,
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form Submitted:", data);
-    setIsSubmitted(true);
-    reset();
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      // Here you would typically make an API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated API call
+      console.log("Form Submitted:", data);
+      setIsSubmitted(true);
+      reset();
+    } catch {
+      setError("Failed to submit form. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const selected = watch("queryType");
+  const handleDismissSuccess = () => {
+    setIsSubmitted(false);
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[hsl(148,38%,91%)] p-6">
-      {isSubmitted && <SuccessMessage />}
+      {isSubmitted && <Toast onDismiss={handleDismissSuccess} />}
       <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-md">
         <h1 className="mb-6 text-3xl font-bold text-[hsl(187,24%,22%)] font-karla">
           Contact Us
         </h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Name Fields */}
+          {error && (
+            <div role="alert" className="p-3 bg-red-50 text-red-600 rounded-md">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-base font-medium text-[hsl(187,24%,22%)] font-karla">
-                First Name
-                <span className="text-[hsl(169,82%,27%)]">*</span>
-              </label>
-              <input
-                {...register("firstName", {
-                  required: "First name is required",
-                })}
-                className={`mt-1 w-full rounded-md border p-2 font-karla transition focus:border-[hsl(169,82%,27%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:bg-white focus:outline-none ${
-                  errors.firstName
-                    ? "border-[hsl(0,66%,54%)]"
-                    : "border-[hsl(186,15%,59%)]"
-                }`}
-                placeholder="First Name"
-              />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                  {errors.firstName.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-base font-medium text-[hsl(187,24%,22%)] font-karla">
-                Last Name <span className="text-[hsl(169,82%,27%)]">*</span>
-              </label>
-              <input
-                {...register("lastName", {
-                  required: "Last name is required",
-                })}
-                className={`mt-1 w-full rounded-md border p-2 font-karla transition focus:border-[hsl(169,82%,27%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:bg-white focus:outline-none ${
-                  errors.lastName
-                    ? "border-[hsl(0,66%,54%)]"
-                    : "border-[hsl(186,15%,59%)]"
-                }`}
-                placeholder="Last Name"
-              />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                  {errors.lastName.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-base font-medium text-[hsl(187,24%,22%)] font-karla">
-              Email Address <span className="text-[hsl(169,82%,27%)]">*</span>
-            </label>
-            <input
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^\S+@\S+$/i,
-                  message: "Invalid email address",
-                },
-              })}
-              className={`mt-1 w-full rounded-md border p-2 font-karla transition focus:border-[hsl(169,82%,27%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:bg-white focus:outline-none ${
-                errors.email
-                  ? "border-[hsl(0,66%,54%)]"
-                  : "border-[hsl(186,15%,59%)]"
-              }`}
-              placeholder="you@example.com"
-              type="email"
+            <FormInput
+              label="First Name"
+              name="firstName"
+              required
+              error={errors.firstName?.message}
+              register={register}
+              placeholder="First Name"
+              validation={FORM_VALIDATION.firstName}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          {/* with state */}
-          <div>
-            <label className="block text-base font-medium text-[hsl(187,24%,22%)] mb-2 font-karla">
-              Query Type <span className="text-[hsl(169,82%,27%)]">*</span>
-            </label>
-
-            <div className="flex flex-col gap-2 md:flex-row">
-              {["General Enquiry", "Support Request"].map((type) => (
-                <label
-                  key={type}
-                  className={`flex items-center gap-2 font-karla w-full border rounded-md p-3 cursor-pointer transition
-                    ${
-                      errors.queryType
-                        ? "border-[hsl(0,66%,54%)]"
-                        : selected === type
-                        ? "border-[hsl(169,82%,27%)] bg-[hsl(148,38%,91%)]" // 选中时绿色
-                        : "border-[hsl(186,15%,59%)]"
-                    }
-                  `}
-                >
-                  <input
-                    type="radio"
-                    value={type}
-                    {...register("queryType", {
-                      required: "Please select a query type",
-                    })}
-                    className="h-4 w-4 accent-[hsl(169,82%,27%)]"
-                  />
-                  {type}
-                </label>
-              ))}
-            </div>
-
-            {errors.queryType && (
-              <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                {errors.queryType.message}
-              </p>
-            )}
-          </div>
-
-          {/* Message */}
-          <div>
-            <label className="block text-base font-medium text-[hsl(187,24%,22%)] font-karla">
-              Message <span className="text-[hsl(169,82%,27%)]">*</span>
-            </label>
-            <textarea
-              {...register("message", { required: "Message is required" })}
-              className={`mt-1 w-full rounded-md border p-2 font-karla transition focus:border-[hsl(169,82%,27%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:bg-white focus:outline-none ${
-                errors.message
-                  ? "border-[hsl(0,66%,54%)]"
-                  : "border-[hsl(186,15%,59%)]"
-              }`}
-              rows={5}
-              placeholder="Write your message here..."
+            <FormInput
+              label="Last Name"
+              name="lastName"
+              required
+              error={errors.lastName?.message}
+              register={register}
+              placeholder="Last Name"
+              validation={FORM_VALIDATION.lastName}
             />
-            {errors.message && (
-              <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                {errors.message.message}
-              </p>
-            )}
           </div>
 
-          {/* Consent */}
-          <div>
-            <label className="flex items-center gap-2 font-karla">
-              <input
-                type="checkbox"
-                {...register("consent", {
-                  required: "You must consent to be contacted",
-                })}
-                className="h-4 w-4 accent-[hsl(169,82%,27%)] border-[hsl(186,15%,59%)] focus:ring-2 focus:ring-[hsl(169,82%,27%)] focus:outline-none"
-              />
-              I consent to being contacted by the team{" "}
-              <span className="text-[hsl(169,82%,27%)]">*</span>
-            </label>
-            {errors.consent && (
-              <p className="mt-1 text-sm text-[hsl(0,66%,54%)] font-karla">
-                {errors.consent.message}
-              </p>
-            )}
-          </div>
+          <FormInput
+            label="Email Address"
+            name="email"
+            type="email"
+            required
+            error={errors.email?.message}
+            register={register}
+            placeholder="you@example.com"
+            validation={FORM_VALIDATION.email}
+          />
 
-          {/* Submit */}
-          <div>
-            <button
-              type="submit"
-              className="w-full rounded-md bg-[hsl(169,82%,27%)] p-3 text-white hover:bg-[hsl(169,82%,35%)] transition font-karla font-bold"
-            >
-              Submit
-            </button>
-          </div>
+          <FormRadio
+            label="Query Type"
+            name="queryType"
+            required
+            error={errors.queryType?.message}
+            options={QUERY_TYPES}
+            register={register}
+            watch={watch}
+            validation={FORM_VALIDATION.queryType}
+          />
+
+          <FormTextArea
+            label="Message"
+            name="message"
+            required
+            error={errors.message?.message}
+            register={register}
+            placeholder="Write your message here..."
+            validation={FORM_VALIDATION.message}
+          />
+
+          <FormCheckbox
+            label="I consent to being contacted by the team"
+            name="consent"
+            required
+            error={errors.consent?.message}
+            register={register}
+            validation={FORM_VALIDATION.consent}
+          />
+
+          <Button type="submit" isLoading={isSubmitting}>
+            Submit
+          </Button>
         </form>
       </div>
     </div>
